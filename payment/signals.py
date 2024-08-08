@@ -10,11 +10,6 @@ def booking_payment_verified_handler(sender, instance, **kwargs):
         Notification.objects.create(user=instance.client, message="Your booking payment has been verified and the booking is now active.")
 
 
-# @receiver(post_save, sender=Payment)
-# def payment_verified_handler(sender, instance, created, **kwargs):
-#     if created and instance.verified:
-#         Notification.objects.create(user=instance.booking.client, message="Your payment has been successfully verified.")
-
 @receiver(post_save, sender=Payment)
 def payment_verified_handler(sender, instance, **kwargs):
     if instance.booking is not None and instance.booking.client is not None:

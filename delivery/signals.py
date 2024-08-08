@@ -1,9 +1,10 @@
-# delivery/signals.py
-
+from notification.models import Notification
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import DeliveryHistory
-from notification.models import Notification
+from booking.models import Booking
+from .models import DeliverySchedule, DeliveryHistory
+from datetime import datetime
+
 
 @receiver(post_save, sender=DeliveryHistory)
 def delivery_status_handler(sender, instance, **kwargs):
@@ -11,13 +12,6 @@ def delivery_status_handler(sender, instance, **kwargs):
         Notification.objects.create(user=instance.booking.client, message="Your delivery has been successfully completed.")
         Notification.objects.create(user=instance.booking.truck.owner, message="Your truck has successfully completed a delivery.")
 
-
-# signals.py
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from booking.models import Booking
-from .models import DeliverySchedule, DeliveryHistory
-from datetime import datetime
 
 @receiver(post_save, sender=Booking)
 def create_delivery_schedule_and_history(sender, instance, created, **kwargs):
