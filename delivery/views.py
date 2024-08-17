@@ -43,7 +43,7 @@ class DeliveryScheduleCreateView(generics.CreateAPIView):
         response_data = {
             'truck_name': booking.truck.name,
             'product_name': booking.product_name,
-            'delivery_cost': booking.delivery_cost,
+            'total_delivery_cost': booking.total_delivery_cost,
             'destination_address': booking.destination_state,
             'scheduled_date': delivery_schedule.scheduled_date,
             'status': delivery_schedule.status

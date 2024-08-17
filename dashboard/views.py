@@ -5,6 +5,9 @@ from users.models import User
 from subscriptions.models import UserSubscription
 from booking.models import Booking
 from delivery.models import DeliverySchedule, DeliveryHistory
+from payment.models import Payment
+from payment.serializers import PaymentSerializer
+
 from .serializers import (
     UserProfileSerializer, 
     SubscriptionSerializer, 
@@ -43,16 +46,38 @@ class ClientDashboardView(APIView):
         delivery_histories = DeliveryHistory.objects.filter(booking__client=user)
         delivery_histories_data = DeliveryHistorySerializer(delivery_histories, many=True).data
 
+        # Payment history
+        payment_history = Payment.objects.filter(user=user).order_by('-date_created')
+        payment_history_data = []
+        for payment in payment_history:
+            payment_data = PaymentSerializer(payment).data
+            if payment.subscription:
+                payment_data['payment_for'] = 'Subscription'
+                payment_data['subscription_plan'] = payment.subscription.name
+            elif payment.booking:
+                payment_data['payment_for'] = 'Booking'
+                payment_data['booking_details'] = {
+                    'truck_name': payment.booking.truck.name,
+                    'product_name': payment.booking.product_name,
+                    'pickup_state': payment.booking.pickup_state,
+                    'destination_state': payment.booking.destination_state,
+                    'delivery_cost': payment.booking.delivery_cost,
+                    'insurance_payment': payment.booking.insurance_payment,
+                    'total_delivery_cost': payment.booking.total_delivery_cost,
+                }
+            payment_history_data.append(payment_data)
+
         response_data = {
             'profile': profile_data,
             'subscription': subscription_data,
             'unpaid_bookings': unpaid_bookings_data,
             'delivery_schedules': delivery_schedules_data,
             'delivery_histories': delivery_histories_data,
+            'payment_history': payment_history_data,  # Add payment history to the response
         }
 
         return Response(response_data, status=200)
-    
+
 
 
 # dashboard/views.py

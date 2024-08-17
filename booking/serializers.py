@@ -16,8 +16,12 @@ class BookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ['id', 'client', 'truck', 'product_name', 'product_weight', 'product_value', 'phone_number', 'payment_completed', 'booked_at', 'pickup_state', 'destination_state', 'delivery_cost']
-        read_only_fields = ['client', 'payment_completed', 'booked_at', 'delivery_cost']
+        fields = [
+            'id', 'client', 'truck', 'product_name', 'product_weight', 'product_value',
+            'phone_number', 'payment_completed', 'booked_at', 'pickup_state',
+            'destination_state', 'delivery_cost', 'insurance_payment', 'total_delivery_cost'  # Include total_delivery_cost
+        ]
+        read_only_fields = ['client', 'payment_completed', 'booked_at', 'delivery_cost', 'insurance_payment', 'total_delivery_cost']
 
     def validate(self, data):
         pickup_state = data.get('pickup_state')

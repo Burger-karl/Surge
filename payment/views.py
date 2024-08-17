@@ -10,6 +10,8 @@ from .paystack_client import PaystackClient
 from .serializers import PaymentSerializer
 import uuid
 from booking.models import Booking
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated
 
 
 paystack_client = PaystackClient()
@@ -85,6 +87,7 @@ class VerifyPaymentView(APIView):
             return Response({'error': 'Payment verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class CreateBookingPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -95,7 +98,7 @@ class CreateBookingPaymentView(APIView):
         if booking.payment_completed:
             return Response({'error': 'Payment already completed for this booking.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        amount = int(booking.delivery_cost * 100)  # Paystack expects amount in kobo
+        amount = int(booking.total_delivery_cost * 100)  # Paystack expects amount in kobo
         email = user.email
         booking_code = str(uuid.uuid4())
 
@@ -108,7 +111,7 @@ class CreateBookingPaymentView(APIView):
         response = paystack_client.initialize_transaction(email, amount, booking_code, callback_url)
 
         if response['status']:
-            return Response({'authorization_url': response['data']['authorization_url']}, status=status.HTTP_200_OK)
+            return Response({'authorization_url': response['data']['authorization_url'], 'booking_code': booking.booking_code}, status=status.HTTP_200_OK)
         else:
             booking.booking_code = None
             booking.save()
@@ -147,3 +150,35 @@ class VerifyBookingPaymentView(APIView):
             return Response({'message': 'Payment successful'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Payment verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class PaymentHistoryView(ListAPIView):
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Payment.objects.filter(user=user).order_by('-created_at')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serialized_data = []
+        for payment in queryset:
+            data = PaymentSerializer(payment).data
+            if payment.subscription:
+                data['payment_for'] = 'Subscription'
+                data['subscription_plan'] = payment.subscription.name
+            elif payment.booking:
+                data['payment_for'] = 'Booking'
+                data['booking_details'] = {
+                    'truck_name': payment.booking.truck.name,
+                    'product_name': payment.booking.product_name,
+                    'pickup_state': payment.booking.pickup_state,
+                    'destination_state': payment.booking.destination_state,
+                    'delivery_cost': payment.booking.delivery_cost,
+                    'insurance_payment': payment.booking.insurance_payment,
+                    'total_delivery_cost': payment.booking.total_delivery_cost,
+                }
+            serialized_data.append(data)
+        return Response(serialized_data)
