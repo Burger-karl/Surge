@@ -159,15 +159,27 @@ WSGI_APPLICATION = 'Surge.wsgi.application'
 #     }
 # }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'Surge7',
+#         'USER': 'postgres',
+#         'PASSWORD': 'C1h2a3r4l5e6s7',
+#         'HOST': 'localhost'
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Surge7',
-        'USER': 'postgres',
-        'PASSWORD': 'C1h2a3r4l5e6s7',
-        'HOST': 'localhost'
+        'NAME': 'surgedb',
+        'USER': 'surgedb_user',
+        'PASSWORD': 'sdhVAeHeg5wS15DmSZWv1igFV6CP94Nr',
+        'HOST': 'dpg-cr2d5r08fa8c73dhfmi0-a',
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
