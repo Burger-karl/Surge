@@ -38,7 +38,7 @@ SECRET_KEY = 'django-insecure-05v77y24p6nps5b*pmb7qf%y+zp-be)60@-c=$%xk&1m+4lbzn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', 'surge-eno7.onrender.com']
 
 
 # Application definition

@@ -34,7 +34,7 @@ class SubscriptionPlan(models.Model):
         cls.objects.get_or_create(
             name=cls.BASIC,
             defaults={
-                'price': 1000.00,
+                'price': 3000.00,
                 'duration': timedelta(days=180),  # 6 months
                 'features': {
                     'Booking app': True,
@@ -45,7 +45,7 @@ class SubscriptionPlan(models.Model):
         cls.objects.get_or_create(
             name=cls.PREMIUM,
             defaults={
-                'price': 1500.00,
+                'price': 5000.00,
                 'duration': timedelta(days=180),  # 6 months
                 'features': {
                     'Booking app': True,
