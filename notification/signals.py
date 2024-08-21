@@ -1,7 +1,6 @@
-# notification/signals.py
-
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
+from utils import is_migration_running  # Import the helper function
 from .models import Notification
 from booking.models import Truck, Booking
 from payment.models import Payment
@@ -10,6 +9,8 @@ from users.models import User
 
 @receiver(post_save, sender=Truck)
 def truck_uploaded_handler(sender, instance, created, **kwargs):
+    if is_migration_running():  # Check if migrations are running
+        return
     if created:
         Notification.objects.create(user=instance.owner, message="Your truck has been uploaded and is awaiting inspection.")
         Notification.objects.create(user=User.objects.filter(is_superuser=True).first(), message="A new truck has been uploaded and is awaiting inspection.")
@@ -18,6 +19,8 @@ def truck_uploaded_handler(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Booking)
 def booking_created_handler(sender, instance, created, **kwargs):
+    if is_migration_running():  # Check if migrations are running
+        return
     if created:
         Notification.objects.create(user=User.objects.filter(is_superuser=True).first(), message="A new booking has been made and is awaiting delivery cost assignment.")
         Notification.objects.create(user=instance.client, message="Your booking has been created successfully. Waiting for delivery cost assignment.")
@@ -27,11 +30,15 @@ def booking_created_handler(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Payment)
 def payment_verified_handler(sender, instance, created, **kwargs):
+    if is_migration_running():  # Check if migrations are running
+        return
     if created and instance.verified:
         Notification.objects.create(user=instance.booking.client, message="Your payment has been successfully verified.")
 
 @receiver(post_save, sender=DeliveryHistory)
 def delivery_status_handler(sender, instance, **kwargs):
+    if is_migration_running():  # Check if migrations are running
+        return
     if instance.status == 'delivered':
         Notification.objects.create(user=instance.booking.client, message="Your delivery has been successfully completed.")
         Notification.objects.create(user=instance.booking.truck.owner, message="Your truck has successfully completed a delivery.")
