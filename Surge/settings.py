@@ -244,10 +244,9 @@ PAYSTACK_PUBLIC_KEY = 'pk_test_49426004fa20a17b7d1fa8f75907ac688530c550'
 
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,  # Disable session authentication for the docs
-    'LOGIN_URL': 'rest_framework:login',
-    'LOGOUT_URL': 'rest_framework:logout',
+    
     'DEFAULT_MODEL_RENDERING': 'example',
-    'SECURITY_DEFINITIONS': None,  # You can define security mechanisms here (optional)
+    
 }
 
 
