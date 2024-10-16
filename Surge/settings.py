@@ -242,6 +242,12 @@ PAYSTACK_SECRET_KEY = 'sk_test_578e98623123672928132bb40df9ec97f9631cda'
 PAYSTACK_PUBLIC_KEY = 'pk_test_49426004fa20a17b7d1fa8f75907ac688530c550'
 
 
+# settings.py
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
+LOGIN_URL = 'login'  # This should match the name of the login URL in your urls.py
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
