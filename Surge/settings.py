@@ -126,6 +126,9 @@ SIMPLE_JWT = {
 }
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Or cache-based session handling
+SESSION_COOKIE_AGE = 600
+SESSION_EXPIRE_AT_BROWSER = True
+SESSION_SAVE_EVERY_REQUEST = True
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -257,6 +260,7 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = ['https://surge-eno7.onrender.com']
+
 
 
 # # settings.py

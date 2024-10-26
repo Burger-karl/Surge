@@ -12,6 +12,7 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     )
     user_type = models.CharField(max_length=11, choices=USER_TYPE_CHOICES, default='client')
+    verified = models.BooleanField(default=False)
     
     objects = CustomUserManager()
 
