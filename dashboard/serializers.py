@@ -19,7 +19,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['profile_image', 'full_name', 'address', 'phone_number', 'state']
 
 
-
 # For Clients
 class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
