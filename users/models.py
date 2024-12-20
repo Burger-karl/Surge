@@ -13,6 +13,10 @@ class User(AbstractUser):
     )
     user_type = models.CharField(max_length=11, choices=USER_TYPE_CHOICES, default='client')
     verified = models.BooleanField(default=False)
+
+    email = models.EmailField(unique=True, error_messages={
+        'unique': "A user with this email already exists."
+    })
     
     objects = CustomUserManager()
 
@@ -21,19 +25,22 @@ class User(AbstractUser):
     
 
 class OTP(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def is_expired(self):
+        return self.created_at + timedelta(minutes=10) < timezone.now()
 
 
 class PasswordResetToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    expiry_date = models.DateTimeField(default=timezone.now)
     
     def is_expired(self):
-        return self.created_at < timezone.now() - timedelta(hours=1)  # Example: 1 hour expiry
+        return self.created_at < timezone.now() - timedelta(hours=1)  # Example: 1 hour expire
 
 
 class Profile(models.Model):

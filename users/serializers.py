@@ -2,9 +2,12 @@ from rest_framework import serializers
 from rest_framework.authentication import authenticate
 from django.contrib.auth import get_user_model
 from .models import OTP, Profile
+from django.utils.crypto import get_random_string
+
 
 User = get_user_model()
     
+
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
@@ -17,22 +20,35 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match.")
         return data
 
-    def save(self, validated_data):
-        """Temporarily save registration data and send OTP for verification."""
-        email = validated_data['email']
-        password = validated_data['password']
-        username = validated_data['username']
+    # def create(self, validated_data):
+    #     """Save user and generate OTP."""
+    #     user = User.objects.create_user(
+    #         username=validated_data['username'],
+    #         email=validated_data['email'],
+    #         password=validated_data['password'],
+    #         user_type=validated_data['user_type']
+    #     )
+    #     otp = get_random_string(length=6, allowed_chars='0123456789')
+    #     OTP.objects.create(user=user, otp=otp)
+    #     return user
+
+    def create(self, validated_data):
         user_type = validated_data['user_type']
-        
-        # Store data temporarily in session for verification step
-        self.context['request'].session['temp_user_data'] = {
-            'username': username,
-            'email': email,
-            'password': password,
-            'user_type': user_type
-        }
-        
-        return validated_data
+        is_staff = user_type == 'admin'
+        is_superuser = user_type == 'admin'
+
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            user_type=user_type,
+            is_staff=is_staff,
+            is_superuser=is_superuser,
+        )
+        otp = get_random_string(length=6, allowed_chars='0123456789')
+        OTP.objects.create(user=user, otp=otp)
+        return user
+
 
 
 class OTPSerializer(serializers.ModelSerializer):
@@ -40,6 +56,10 @@ class OTPSerializer(serializers.ModelSerializer):
         model = OTP
         fields = ('user', 'otp')
 
+
+class ResendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -93,4 +113,3 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
             user = User.objects.create_user(**validated_data)
         return user
 
- 

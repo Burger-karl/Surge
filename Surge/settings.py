@@ -43,10 +43,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'corsheaders',
     'rest_framework',
-    'drf_yasg',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'drf_yasg',
     'users',
     'subscriptions',
     'payment',
@@ -66,7 +67,6 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
 ]
 
-
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -81,14 +81,12 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
 
-
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
     ],
 }
 
@@ -119,6 +117,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -148,6 +147,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Surge.wsgi.application'
 
+# Alternatively, specify allowed origins (recommended for production)
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",  
+    # "http://127.0.0.1:3000",
+    # "https://surge-frontend.example.com",  
+]
+
+# Allow specific headers, methods, or credentials if needed
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization'
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -245,12 +258,12 @@ PAYSTACK_SECRET_KEY = 'sk_test_578e98623123672928132bb40df9ec97f9631cda'
 PAYSTACK_PUBLIC_KEY = 'pk_test_49426004fa20a17b7d1fa8f75907ac688530c550'
 
 
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # Or set to AllowAny just for the swagger view
-    ],
-    # Other settings...
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.AllowAny',  # Or set to AllowAny just for the swagger view
+#     ],
+#     # Other settings...
+# }
 
 CSRF_TRUSTED_ORIGINS = ['https://surge-eno7.onrender.com']
 
@@ -285,6 +298,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'subscriptions': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        }
     },
 }
 

@@ -30,20 +30,33 @@ class TruckCreateView(generics.CreateAPIView):
             raise PermissionDenied("Only truck owners can upload trucks.")
 
 
+class TruckOwnerTrucksView(generics.ListAPIView):
+    serializer_class = TruckSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Truck owners can view all their uploaded trucks (both pending and available).",
+        responses={200: TruckSerializer(many=True), 403: "Only truck owners can view this data"}
+    )
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == 'truck_owner':
+            return Truck.objects.filter(owner=user)
+        raise PermissionDenied("Only truck owners can access this feature.")
+
+
 class TruckListView(generics.ListAPIView):
     queryset = Truck.objects.filter(available=True)
     serializer_class = TruckSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_description="List all available trucks for clients or list trucks for a specific truck owner",
+        operation_description="List all available trucks for both clients and truck owners",
         responses={200: TruckSerializer(many=True)}
     )
     def get_queryset(self):
-        user = self.request.user
-        if user.user_type == 'truck_owner':
-            return Truck.objects.filter(owner=user)
         return Truck.objects.filter(available=True)
+
 
 
 class BookingCreateView(generics.CreateAPIView):
@@ -276,3 +289,21 @@ class BookingAdminListView(generics.ListAPIView):
             response_data.append(booking_data)
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class PendingTrucksListView(generics.ListAPIView):
+    """
+    Admin view to list all pending trucks (where available=False).
+    """
+    serializer_class = TruckSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Superuser views all pending trucks.",
+        responses={200: TruckSerializer(many=True), 403: "Permission denied"}
+    )
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_superuser:
+            raise PermissionDenied("Only superusers can view pending trucks.")
+        return Truck.objects.filter(available=False)

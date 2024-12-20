@@ -1,5 +1,7 @@
 from rest_framework import status, permissions, generics
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.urls import reverse
@@ -10,6 +12,9 @@ from .serializers import SubscriptionPlanSerializer, UserSubscriptionSerializer
 import uuid
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import logging
+
+logger = logging.getLogger(__name__)
 
 paystack_client = PaystackClient()
 
@@ -19,9 +24,19 @@ class SubscriptionPlanListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_description="List all available subscription plans.",
-        responses={200: SubscriptionPlanSerializer(many=True)}
+        operation_description="List all available subscription plans. Use the access token generated during login as a Bearer Token in the Authorization header.",
+        responses={200: SubscriptionPlanSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter(
+                'Authorization',
+                openapi.IN_HEADER,
+                description="Bearer {access_token}",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+        ],
     )
+    
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
@@ -35,6 +50,7 @@ class UserSubscriptionListView(generics.ListAPIView):
         responses={200: UserSubscriptionSerializer(many=True)}
     )
     def get_queryset(self):
+        logger.debug("Fetching subscriptions for user %s", self.request.user)
         return UserSubscription.objects.filter(user=self.request.user)
 
 
@@ -240,3 +256,24 @@ class CancelSubscriptionView(generics.DestroyAPIView):
         user_subscription.save()
 
         return Response({'message': 'Subscription canceled successfully.'}, status=status.HTTP_200_OK)
+
+
+
+LOGGING = {
+    'version': 1,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'django_auth': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
