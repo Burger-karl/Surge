@@ -5,11 +5,20 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import Truck, Booking
+from .models import Truck, Booking, TruckImage
 from django.shortcuts import get_object_or_404
 from .serializers import TruckSerializer, BookingSerializer
 from users.models import User
 from subscriptions.models import UserSubscription, SubscriptionPlan
+
+
+image_param = openapi.Parameter(
+    'images',
+    in_=openapi.IN_FORM,
+    description='List of image files for the truck',
+    type=openapi.TYPE_FILE,
+    required=True,
+)
 
 
 class TruckCreateView(generics.CreateAPIView):
@@ -25,7 +34,13 @@ class TruckCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = self.request.user
         if user.user_type == 'truck_owner':
-            serializer.save(owner=user)
+            truck = serializer.save(owner=user)
+
+            # Handle multiple images
+            images = self.request.FILES.getlist('images')  # Expect multiple images in 'images'
+            if images:
+                for image in images:
+                    TruckImage.objects.create(truck=truck, image=image)
         else:
             raise PermissionDenied("Only truck owners can upload trucks.")
 
@@ -56,7 +71,6 @@ class TruckListView(generics.ListAPIView):
     )
     def get_queryset(self):
         return Truck.objects.filter(available=True)
-
 
 
 class BookingCreateView(generics.CreateAPIView):

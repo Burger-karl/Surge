@@ -1,12 +1,22 @@
 from rest_framework import serializers
-from .models import Truck, Booking
+from .models import Truck, TruckImage, Booking
+    
+class TruckImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TruckImage
+        fields = ['image']
+
+    def to_representation(self, instance):
+        return instance.image.url  # Return the URL of the image
+
 
 class TruckSerializer(serializers.ModelSerializer):
     owner = serializers.StringRelatedField()
+    images = TruckImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Truck
-        fields = ['id', 'owner', 'name', 'image', 'weight_range', 'available']
+        fields = ['id', 'owner', 'name', 'weight_range', 'available', 'images']
         read_only_fields = ['available', 'owner']
 
 

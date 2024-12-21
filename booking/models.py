@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from users.models import User
 
+
 class Truck(models.Model):
     LIGHTWEIGHT = 'lightweight'
     MEDIUMWEIGHT = 'mediumweight'
@@ -17,12 +18,20 @@ class Truck(models.Model):
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='trucks/')
     weight_range = models.CharField(max_length=15, choices=WEIGHT_CHOICES, default=LIGHTWEIGHT)
     available = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} ({self.owner.username})"
+
+
+class TruckImage(models.Model):
+    truck = models.ForeignKey(Truck, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to='trucks/')
+
+    def __str__(self):
+        return f"Image for {self.truck.name}"
+
 
 class Booking(models.Model):
     STATES_CHOICES = [
