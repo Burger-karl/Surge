@@ -89,6 +89,41 @@ class VerifyPaymentView(APIView):
             return Response({'error': 'Payment verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# class CreateBookingPaymentView(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     @swagger_auto_schema(
+#         operation_description="Create a payment for a booking",
+#         responses={200: 'Success', 400: 'Failed'},
+#         tags=['Payment']
+#     )
+#     def post(self, request, booking_id):
+#         booking = get_object_or_404(Booking, id=booking_id)
+#         user = request.user
+
+#         if booking.payment_completed:
+#             return Response({'error': 'Payment already completed for this booking.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         amount = int(booking.total_delivery_cost * 100)  # Paystack expects amount in kobo
+#         email = user.email
+#         booking_code = str(uuid.uuid4())
+
+#         booking.payment_completed = False
+#         booking.booking_code = booking_code
+#         booking.save()
+
+#         callback_url = request.build_absolute_uri(reverse('verify-booking-payment', kwargs={'ref': booking_code}))
+
+#         response = paystack_client.initialize_transaction(email, amount, booking_code, callback_url)
+
+#         if response['status']:
+#             return Response({'authorization_url': response['data']['authorization_url'], 'booking_code': booking.booking_code}, status=status.HTTP_200_OK)
+#         else:
+#             booking.booking_code = None
+#             booking.save()
+#             return Response({'error': 'Payment initialization failed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class CreateBookingPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -98,30 +133,47 @@ class CreateBookingPaymentView(APIView):
         tags=['Payment']
     )
     def post(self, request, booking_id):
+        # Fetch the booking object or return 404
         booking = get_object_or_404(Booking, id=booking_id)
         user = request.user
 
+        # Check if the payment is already completed
         if booking.payment_completed:
             return Response({'error': 'Payment already completed for this booking.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        amount = int(booking.total_delivery_cost * 100)  # Paystack expects amount in kobo
-        email = user.email
-        booking_code = str(uuid.uuid4())
+        # Ensure the total_delivery_cost is not None
+        if not booking.total_delivery_cost:
+            return Response({'error': 'Total delivery cost is not calculated for this booking.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        booking.payment_completed = False
-        booking.booking_code = booking_code
-        booking.save()
+        try:
+            amount = int(booking.total_delivery_cost * 100)  # Convert amount to kobo
+            email = user.email
+            booking_code = str(uuid.uuid4())  # Generate a unique booking code
 
-        callback_url = request.build_absolute_uri(reverse('verify-booking-payment', kwargs={'ref': booking_code}))
-
-        response = paystack_client.initialize_transaction(email, amount, booking_code, callback_url)
-
-        if response['status']:
-            return Response({'authorization_url': response['data']['authorization_url'], 'booking_code': booking.booking_code}, status=status.HTTP_200_OK)
-        else:
-            booking.booking_code = None
+            # Update the booking with the new booking code
+            booking.payment_completed = False
+            booking.booking_code = booking_code
             booking.save()
-            return Response({'error': 'Payment initialization failed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Generate callback URL
+            callback_url = request.build_absolute_uri(reverse('verify-booking-payment', kwargs={'ref': booking_code}))
+
+            # Call Paystack API for payment initialization
+            response = paystack_client.initialize_transaction(email, amount, booking_code, callback_url)
+
+            if response.get('status'):
+                return Response(
+                    {'authorization_url': response['data']['authorization_url'], 'booking_code': booking.booking_code},
+                    status=status.HTTP_200_OK
+                )
+            else:
+                booking.booking_code = None
+                booking.save()
+                return Response({'error': 'Payment initialization failed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class VerifyBookingPaymentView(APIView):
