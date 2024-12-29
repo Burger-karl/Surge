@@ -92,8 +92,15 @@ class DeliveryHistoryView(generics.ListAPIView):
         responses={200: DeliveryHistorySerializer(many=True)}
     )
     def get_queryset(self):
+        """
+        Return delivery histories with status 'delivered' for the authenticated user.
+        """
         user = self.request.user
-        return DeliveryHistory.objects.filter(booking__client=user, status='delivered')
+        return DeliveryHistory.objects.filter(
+            booking__client=user,
+            status='delivered'
+        )
+
 
 
 class DeliveryDocumentView(generics.ListAPIView):

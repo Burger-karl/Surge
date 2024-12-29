@@ -15,18 +15,45 @@ def delivery_status_handler(sender, instance, **kwargs):
         Notification.objects.create(user=instance.booking.client, message="Your delivery has been successfully completed.")
         Notification.objects.create(user=instance.booking.truck.owner, message="Your truck has successfully completed a delivery.")
 
+
+
 @receiver(post_save, sender=Booking)
-def create_delivery_schedule_and_history(sender, instance, created, **kwargs):
-    if is_migration_running():  # Check if migrations are running
+def create_delivery_schedule_on_payment(sender, instance, created, **kwargs):
+    """
+    Create a delivery schedule and initial delivery history when a booking payment is completed.
+    """
+    if created:  # New booking created
         return
-    if created and instance.booking_status == 'active' and instance.payment_completed:
+
+    # Trigger when payment is completed and booking is active
+    if instance.payment_completed and instance.booking_status == 'active':
         scheduled_date = datetime.now().date()
-        DeliverySchedule.objects.create(
+
+        # Create DeliverySchedule if it doesn't already exist
+        delivery_schedule, schedule_created = DeliverySchedule.objects.get_or_create(
             booking=instance,
-            scheduled_date=scheduled_date
+            defaults={'scheduled_date': scheduled_date, 'status': 'pending'}
         )
-        DeliveryHistory.objects.create(
-            booking=instance,
-            delivery_date=scheduled_date,
-            status='pending'
+
+        if schedule_created:  # Only create DeliveryHistory for new schedules
+            DeliveryHistory.objects.create(
+                booking=instance,
+                delivery_date=scheduled_date,
+                status='pending'
+            )
+
+
+@receiver(post_save, sender=DeliveryHistory)
+def notify_on_delivery_completion(sender, instance, **kwargs):
+    """
+    Notify client and truck owner when a delivery is marked as 'delivered'.
+    """
+    if instance.status == 'delivered':
+        Notification.objects.create(
+            user=instance.booking.client,
+            message="Your delivery has been successfully completed."
+        )
+        Notification.objects.create(
+            user=instance.booking.truck.owner,
+            message="Your truck has successfully completed a delivery."
         )
