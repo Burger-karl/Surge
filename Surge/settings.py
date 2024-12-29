@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 import os
 from pathlib import Path
 from datetime import timedelta
+import dj_database_url
 
 load_dotenv()
 
@@ -176,27 +177,22 @@ CORS_ALLOW_CREDENTIALS = True
 #     }
 # }
 
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL')
+    )
+}
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'postgres',
-#         'USER': 'postgres.boabongxmzygcjwkxtsa',
-#         'PASSWORD': 'C1h2a3r4l5e6s7',
-#         'HOST': 'aws-0-eu-central-1.pooler.supabase.com',
-#         'PORT': '6543',
+#         'NAME': os.getenv("DB_NAME"),
+#         'USER': os.getenv("DB_USER"),
+#         'PASSWORD': os.getenv("DB_PASSWORD"),
+#         'HOST': os.getenv("DB_HOST"),
+#         'PORT': os.getenv("DB_PORT"),
 #     }
 # }
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DB_NAME"),
-        'USER': os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST': os.getenv("DB_HOST"),
-        'PORT': os.getenv("DB_PORT"),
-    }
-}
 
 # Email configuration
 # EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")

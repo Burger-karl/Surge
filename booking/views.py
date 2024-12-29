@@ -76,54 +76,6 @@ class TruckListView(generics.ListAPIView):
         return Truck.objects.filter(available=True)
 
 
-# class BookingCreateView(generics.CreateAPIView):
-#     queryset = Booking.objects.all()
-#     serializer_class = BookingSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     @swagger_auto_schema(
-#         operation_description="Client creates a booking for a truck",
-#         responses={
-#             201: BookingSerializer(),
-#             403: "Only clients with active paid subscriptions can book trucks"
-#         }
-#     )
-#     def perform_create(self, serializer):
-#         user = self.request.user
-
-#         # Ensure only clients can make a booking
-#         if user.user_type != 'client':
-#             raise PermissionDenied("Only clients can book trucks.")
-
-#         # Retrieve the active subscription for the user, excluding the 'free' plan
-#         active_subscription = UserSubscription.objects.filter(
-#             user=user,
-#             subscription_status='active',
-#             is_active=True
-#         ).exclude(plan__name=SubscriptionPlan.FREE).first()
-
-#         if not active_subscription:
-#             raise PermissionDenied("You must have an active paid subscription to book a truck.")
-
-#         # Determine the insurance payment based on the subscription plan
-#         if active_subscription.plan.name == SubscriptionPlan.PREMIUM:
-#             insurance_payment = 150000  # Insurance payment for premium clients
-#         else:
-#             insurance_payment = 0  # No insurance payment for basic clients
-
-#         # Save the booking with the calculated insurance payment
-#         booking = serializer.save(client=user, insurance_payment=insurance_payment)
-
-#         # Calculate the total delivery cost for premium clients
-#         if active_subscription.plan.name == SubscriptionPlan.PREMIUM:
-#             booking.total_delivery_cost = booking.delivery_cost + insurance_payment
-#         else:
-#             booking.total_delivery_cost = booking.delivery_cost  # For basic clients, total delivery cost is the same as delivery cost
-
-#         # Save the total delivery cost to the booking
-#         booking.save()
-
-
 class BookingCreateView(generics.CreateAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
@@ -254,38 +206,6 @@ class TruckUpdateAvailabilityView(APIView):
         truck.available = True
         truck.save()
         return Response({"detail": "Truck availability updated to true."})
-
-
-# class BookingUpdateDeliveryCostView(APIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     @swagger_auto_schema(
-#         operation_description="Superuser updates the delivery cost of a booking",
-#         request_body=openapi.Schema(
-#             type=openapi.TYPE_OBJECT,
-#             properties={
-#                 'delivery_cost': openapi.Schema(type=openapi.TYPE_NUMBER, description='New delivery cost'),
-#             },
-#             required=['delivery_cost'],
-#         ),
-#         responses={200: "Booking delivery cost updated", 404: "Booking not found"}
-#     )
-#     def post(self, request, pk):
-#         if not request.user.is_superuser:
-#             raise PermissionDenied("Only superusers can update delivery cost.")
-        
-#         try:
-#             booking = Booking.objects.get(pk=pk)
-#         except Booking.DoesNotExist:
-#             return Response({"detail": "Booking not found."}, status=404)
-
-#         delivery_cost = request.data.get("delivery_cost")
-#         if delivery_cost is None:
-#             return Response({"detail": "Delivery cost is required."}, status=400)
-
-#         booking.delivery_cost = delivery_cost
-#         booking.save()
-#         return Response({"detail": "Booking delivery cost updated."})
 
 
 class BookingUpdateDeliveryCostView(APIView):
