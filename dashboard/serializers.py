@@ -25,10 +25,25 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = UserSubscription
         fields = ['id', 'plan', 'start_date', 'end_date', 'subscription_status']
 
+# class UnpaidBookingSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Booking
+#         fields = ['id', 'truck', 'product_name', 'destination_state', 'delivery_cost']
+
 class UnpaidBookingSerializer(serializers.ModelSerializer):
+    payment_completed = serializers.BooleanField()
+
     class Meta:
         model = Booking
-        fields = ['id', 'truck', 'product_name', 'destination_state', 'delivery_cost']
+        fields = [
+            'id',
+            'truck',
+            'product_name',
+            'destination_state',
+            'delivery_cost',
+            'payment_completed',  # Include this field for clarity
+        ]
+
 
 class DeliveryScheduleSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()

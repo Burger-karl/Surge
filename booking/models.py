@@ -57,7 +57,7 @@ class Booking(models.Model):
     product_name = models.CharField(max_length=255)
     product_weight = models.CharField(max_length=15, choices=Truck.WEIGHT_CHOICES)
     product_value = models.DecimalField(max_digits=10, decimal_places=2)
-    phone_number = models.DecimalField(max_digits=11, decimal_places=1, default=00000000000)
+    phone_number = models.CharField(max_length=11)
     payment_completed = models.BooleanField(default=False)
     booked_at = models.DateTimeField(default=timezone.now)
     pickup_state = models.CharField(max_length=20, choices=STATES_CHOICES)

@@ -84,44 +84,9 @@ class VerifyPaymentView(APIView):
                 verified=True
             )
 
-            return Response({'message': 'Payment successful'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Subscription Payment successful'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Payment verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class CreateBookingPaymentView(APIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     @swagger_auto_schema(
-#         operation_description="Create a payment for a booking",
-#         responses={200: 'Success', 400: 'Failed'},
-#         tags=['Payment']
-#     )
-#     def post(self, request, booking_id):
-#         booking = get_object_or_404(Booking, id=booking_id)
-#         user = request.user
-
-#         if booking.payment_completed:
-#             return Response({'error': 'Payment already completed for this booking.'}, status=status.HTTP_400_BAD_REQUEST)
-
-#         amount = int(booking.total_delivery_cost * 100)  # Paystack expects amount in kobo
-#         email = user.email
-#         booking_code = str(uuid.uuid4())
-
-#         booking.payment_completed = False
-#         booking.booking_code = booking_code
-#         booking.save()
-
-#         callback_url = request.build_absolute_uri(reverse('verify-booking-payment', kwargs={'ref': booking_code}))
-
-#         response = paystack_client.initialize_transaction(email, amount, booking_code, callback_url)
-
-#         if response['status']:
-#             return Response({'authorization_url': response['data']['authorization_url'], 'booking_code': booking.booking_code}, status=status.HTTP_200_OK)
-#         else:
-#             booking.booking_code = None
-#             booking.save()
-#             return Response({'error': 'Payment initialization failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateBookingPaymentView(APIView):
@@ -202,7 +167,7 @@ class VerifyBookingPaymentView(APIView):
                 verified=True
             )
 
-            return Response({'message': 'Payment successful'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Booking Payment successful'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Payment verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
