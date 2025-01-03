@@ -61,7 +61,7 @@ class SubscribeView(generics.CreateAPIView):
     @swagger_auto_schema(
         operation_description="Subscribe to a new plan",
         responses={
-            200: openapi.Response('Subscription created and payment initialized.', UserSubscriptionSerializer),
+            200: openapi.Response('Paystack authorization url and subscription code.'),
             400: 'Bad request or payment initialization failed.',
             403: 'Forbidden for non-client users.'
         }
@@ -117,42 +117,42 @@ class SubscribeView(generics.CreateAPIView):
                 return Response({'error': 'Payment initialization failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PaymentCallbackView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+# class PaymentCallbackView(generics.GenericAPIView):
+#     permission_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(
-        operation_description="Verify payment via the callback reference.",
-        responses={
-            200: 'Payment verified and subscription activated.',
-            400: 'Payment verification failed.'
-        }
-    )
-    def get(self, request, ref):
-        response = paystack_client.verify_transaction(ref)
+#     @swagger_auto_schema(
+#         operation_description="Verify payment via the callback reference.",
+#         responses={
+#             200: 'Payment verified and subscription activated.',
+#             400: 'Payment verification failed.'
+#         }
+#     )
+#     def get(self, request, ref):
+#         response = paystack_client.verify_transaction(ref)
 
-        if response['status'] and response['data']['status'] == 'success':
-            user_subscription = get_object_or_404(UserSubscription, subscription_code=ref)
-            user_subscription.payment_completed = True
-            user_subscription.is_active = True
-            user_subscription.subscription_status = 'active'
-            user_subscription.save()
+#         if response['status'] and response['data']['status'] == 'success':
+#             user_subscription = get_object_or_404(UserSubscription, subscription_code=ref)
+#             user_subscription.payment_completed = True
+#             user_subscription.is_active = True
+#             user_subscription.subscription_status = 'active'
+#             user_subscription.save()
 
-            Payment.objects.create(
-                user=request.user,
-                subscription=user_subscription.plan,
-                amount=user_subscription.plan.price,
-                ref=ref,
-                email=request.user.email,
-                verified=True
-            )
+#             Payment.objects.create(
+#                 user=request.user,
+#                 subscription=user_subscription.plan,
+#                 amount=user_subscription.plan.price,
+#                 ref=ref,
+#                 email=request.user.email,
+#                 verified=True
+#             )
 
-            if user_subscription.plan.name == SubscriptionPlan.PREMIUM:
-                user_subscription.subscription_type = SubscriptionPlan.PREMIUM
-                user_subscription.save()
+#             if user_subscription.plan.name == SubscriptionPlan.PREMIUM:
+#                 user_subscription.subscription_type = SubscriptionPlan.PREMIUM
+#                 user_subscription.save()
 
-            return Response({'message': 'Payment successful'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Payment verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
+#             return Response({'message': 'Payment successful'}, status=status.HTTP_200_OK)
+#         else:
+#             return Response({'error': 'Payment verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RenewSubscriptionView(generics.CreateAPIView):

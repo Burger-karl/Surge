@@ -270,44 +270,6 @@ class BookingUpdateDeliveryCostView(APIView):
         })
 
 
-class BookingAdminUpdateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_description="Superuser updates the delivery cost and total delivery cost of a booking",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'delivery_cost': openapi.Schema(type=openapi.TYPE_NUMBER, description='New delivery cost'),
-            },
-            required=['delivery_cost'],
-        ),
-        responses={200: "Booking details updated", 404: "Booking not found"}
-    )
-    def post(self, request, pk):
-        if not request.user.is_superuser:
-            raise PermissionDenied("Only superusers can update booking details.")
-
-        try:
-            booking = Booking.objects.get(pk=pk)
-        except Booking.DoesNotExist:
-            return Response({"detail": "Booking not found."}, status=404)
-
-        delivery_cost = request.data.get("delivery_cost")
-        if delivery_cost is None:
-            return Response({"detail": "Delivery cost is required."}, status=400)
-
-        # Update delivery cost
-        booking.delivery_cost = delivery_cost
-
-        # Update total delivery cost (insurance + delivery cost) if applicable
-        if booking.insurance_payment > 0:
-            booking.total_delivery_cost = booking.insurance_payment + delivery_cost
-        booking.save()
-
-        return Response({"detail": "Booking delivery cost and total delivery cost updated."})
-
-
 class BookingAdminListView(generics.ListAPIView):
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]

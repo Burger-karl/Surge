@@ -17,45 +17,45 @@ from drf_yasg import openapi
 
 paystack_client = PaystackClient()
 
-class CreateSubscriptionPaymentView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+# class CreateSubscriptionPaymentView(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(
-        operation_description="Create a payment for a subscription plan",
-        responses={200: 'Success', 400: 'Failed'},
-        tags=['Payment']
-    )
-    def post(self, request, plan_id):
-        plan = get_object_or_404(SubscriptionPlan, id=plan_id)
-        user = request.user
+#     @swagger_auto_schema(
+#         operation_description="Create a payment for a subscription plan",
+#         responses={200: 'Success', 400: 'Failed'},
+#         tags=['Payment']
+#     )
+#     def post(self, request, plan_id):
+#         plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+#         user = request.user
 
-        if UserSubscription.objects.filter(user=user, subscription_status='active').exists():
-            return Response({'error': 'You already have an active subscription.'}, status=status.HTTP_400_BAD_REQUEST)
+#         if UserSubscription.objects.filter(user=user, subscription_status='active').exists():
+#             return Response({'error': 'You already have an active subscription.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        amount = int(plan.price * 100)  # Paystack expects amount in kobo
-        email = user.email
-        subscription_code = str(uuid.uuid4())
+#         amount = int(plan.price * 100)  # Paystack expects amount in kobo
+#         email = user.email
+#         subscription_code = str(uuid.uuid4())
 
-        user_subscription = UserSubscription.objects.create(
-            user=user,
-            plan=plan,
-            start_date=timezone.now(),
-            end_date=timezone.now() + plan.duration,
-            is_active=False,
-            payment_completed=False,
-            subscription_status='pending',
-            subscription_code=subscription_code
-        )
+#         user_subscription = UserSubscription.objects.create(
+#             user=user,
+#             plan=plan,
+#             start_date=timezone.now(),
+#             end_date=timezone.now() + plan.duration,
+#             is_active=False,
+#             payment_completed=False,
+#             subscription_status='pending',
+#             subscription_code=subscription_code
+#         )
 
-        callback_url = request.build_absolute_uri(reverse('verify-payment', kwargs={'ref': subscription_code}))
+#         callback_url = request.build_absolute_uri(reverse('verify-payment', kwargs={'ref': subscription_code}))
 
-        response = paystack_client.initialize_transaction(email, amount, subscription_code, callback_url)
+#         response = paystack_client.initialize_transaction(email, amount, subscription_code, callback_url)
 
-        if response['status']:
-            return Response({'authorization_url': response['data']['authorization_url']}, status=status.HTTP_200_OK)
-        else:
-            user_subscription.delete()
-            return Response({'error': 'Payment initialization failed.'}, status=status.HTTP_400_BAD_REQUEST)
+#         if response['status']:
+#             return Response({'authorization_url': response['data']['authorization_url']}, status=status.HTTP_200_OK)
+#         else:
+#             user_subscription.delete()
+#             return Response({'error': 'Payment initialization failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
