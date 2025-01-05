@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from users.models import User
 from subscriptions.models import UserSubscription
-from booking.models import Booking, Truck
+from booking.models import Booking, Truck, TruckImage
 from delivery.models import DeliverySchedule, DeliveryHistory
 from users.serializers import ProfileSerializer
 
@@ -93,14 +93,33 @@ class DeliveryHistorySerializer(serializers.ModelSerializer):
 
 # Truck Owners
 
+# Truck Owners
+class TruckImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TruckImage
+        fields = ['image']
+
+
 class TruckSerializer(serializers.ModelSerializer):
+    images = TruckImageSerializer(many=True, read_only=True)  # Include truck images
+
     class Meta:
         model = Truck
-        fields = '__all__'
+        fields = ['id', 'name', 'weight_range', 'available', 'images']  # Add images
+
 
 class BookingSerializer(serializers.ModelSerializer):
-    truck = TruckSerializer()
+    truck = TruckSerializer()  # Nested truck details, including images
 
     class Meta:
         model = Booking
-        fields = ['id', 'client', 'truck', 'product_name', 'destination_state', 'delivery_cost', 'booking_status', 'payment_completed']
+        fields = [
+            'id',
+            'client',
+            'truck',
+            'product_name',
+            'destination_state',
+            'delivery_cost',
+            'booking_status',
+            'payment_completed',
+        ]

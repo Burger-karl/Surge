@@ -84,6 +84,9 @@ from .serializers import (
 
 
 class ClientDashboardView(APIView):
+    """
+    Retrieve client dashboard data including profile, subscription, unpaid bookings, delivery schedules, delivery histories, and payment history.
+    """
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -173,6 +176,9 @@ from .serializers import (
 )
 
 class TruckOwnerDashboardView(APIView):
+    """
+    Retrieve truck owner's dashboard data including profile, pending trucks, available trucks, and booked trucks.
+    """
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(

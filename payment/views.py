@@ -58,11 +58,14 @@ paystack_client = PaystackClient()
 #             return Response({'error': 'Payment initialization failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyPaymentView(APIView):
+    """
+    Verify a subscription payment
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
         operation_description="Verify a subscription payment",
-        responses={200: 'Payment Verified', 400: 'Payment Failed'},
+        responses={200: 'Subscription Payment Successful', 400: 'Payment Failed'},
         tags=['Payment']
     )
     def get(self, request, ref):
@@ -90,11 +93,14 @@ class VerifyPaymentView(APIView):
 
 
 class CreateBookingPaymentView(APIView):
+    """
+    Create a payment for a booking
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
         operation_description="Create a payment for a booking",
-        responses={200: 'Success', 400: 'Failed'},
+        responses={200: 'Paystack authorization url', 400: 'Failed'},
         tags=['Payment']
     )
     def post(self, request, booking_id):
@@ -142,11 +148,14 @@ class CreateBookingPaymentView(APIView):
 
 
 class VerifyBookingPaymentView(APIView):
+    """
+    Verify a booking payment
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
         operation_description="Verify a booking payment",
-        responses={200: 'Payment Verified', 400: 'Payment Failed'},
+        responses={200: 'Booking Payment Successful', 400: 'Payment Failed'},
         tags=['Payment']
     )
     def get(self, request, ref):
@@ -173,6 +182,9 @@ class VerifyBookingPaymentView(APIView):
 
 
 class PaymentHistoryView(ListAPIView):
+    """
+    Get payment history
+    """
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
 

@@ -13,6 +13,9 @@ from booking.models import Booking
 
 
 class DeliveryScheduleCreateView(generics.CreateAPIView):
+    """
+    Create a new delivery schedule for a confirmed booking.
+    """
     queryset = DeliverySchedule.objects.all()
     serializer_class = DeliveryScheduleSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -71,6 +74,9 @@ class DeliveryScheduleCreateView(generics.CreateAPIView):
 
 
 class DeliveryScheduleListView(generics.ListAPIView):
+    """
+    List all active delivery schedules for the authenticated client.
+    """
     serializer_class = DeliveryScheduleSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -84,6 +90,9 @@ class DeliveryScheduleListView(generics.ListAPIView):
 
 
 class DeliveryHistoryView(generics.ListAPIView):
+    """
+    List all delivery histories for the authenticated client with status 'delivered'.
+    """
     serializer_class = DeliveryHistorySerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -103,20 +112,23 @@ class DeliveryHistoryView(generics.ListAPIView):
 
 
 
-class DeliveryDocumentView(generics.ListAPIView):
-    queryset = DeliveryDocument.objects.all()
-    serializer_class = DeliveryDocumentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+# class DeliveryDocumentView(generics.ListAPIView):
+#     queryset = DeliveryDocument.objects.all()
+#     serializer_class = DeliveryDocumentSerializer
+#     permission_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(
-        operation_description="List all delivery documents available for the authenticated user.",
-        responses={200: DeliveryDocumentSerializer(many=True)}
-    )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+#     @swagger_auto_schema(
+#         operation_description="List all delivery documents available for the authenticated user.",
+#         responses={200: DeliveryDocumentSerializer(many=True)}
+#     )
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
 
 
 class UpdateDeliveryScheduleStatusView(APIView):
+    """
+    Update the status of a delivery schedule to 'delivered'
+    """
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(

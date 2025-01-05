@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 paystack_client = PaystackClient()
 
 class SubscriptionPlanListView(generics.ListAPIView):
+    """
+    List all available subscription plans
+    """
     queryset = SubscriptionPlan.objects.all()
     serializer_class = SubscriptionPlanSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -42,6 +45,9 @@ class SubscriptionPlanListView(generics.ListAPIView):
 
 
 class UserSubscriptionListView(generics.ListAPIView):
+    """
+    List the current user's subscriptions.
+    """
     serializer_class = UserSubscriptionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -55,6 +61,9 @@ class UserSubscriptionListView(generics.ListAPIView):
 
 
 class SubscribeView(generics.CreateAPIView):
+    """
+    Subscribe to a new plan
+    """
     serializer_class = UserSubscriptionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -156,12 +165,15 @@ class SubscribeView(generics.CreateAPIView):
 
 
 class RenewSubscriptionView(generics.CreateAPIView):
+    """
+    Renew an existing subscription plan.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
         operation_description="Renew an existing subscription plan.",
         responses={
-            200: 'Renewal successful and payment initialized.',
+            200: 'Paystack authorization url.',
             400: 'Bad request or payment initialization failed.',
             403: 'Forbidden for non-client users.'
         }
@@ -192,12 +204,15 @@ class RenewSubscriptionView(generics.CreateAPIView):
 
 
 class UpgradeSubscriptionView(generics.CreateAPIView):
+    """
+    Upgrade the user's subscription plan.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
         operation_description="Upgrade the user's subscription plan.",
         responses={
-            200: 'Upgrade successful and payment initialized.',
+            200: 'Paystack authorization url.',
             400: 'Bad request or payment initialization failed.',
             403: 'Forbidden for non-client users.'
         }
@@ -232,6 +247,9 @@ class UpgradeSubscriptionView(generics.CreateAPIView):
 
 
 class CancelSubscriptionView(generics.DestroyAPIView):
+    """
+    Cancel an active subscription plan.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(

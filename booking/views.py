@@ -25,6 +25,9 @@ image_param = openapi.Parameter(
 
 
 class TruckCreateView(generics.CreateAPIView):
+    """
+    Truck owner uploads a truck
+    """
     queryset = Truck.objects.all()
     serializer_class = TruckSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -49,6 +52,9 @@ class TruckCreateView(generics.CreateAPIView):
 
 
 class TruckOwnerTrucksView(generics.ListAPIView):
+    """
+    Truck owners can view all their uploaded trucks (both pending and available).
+    """
     serializer_class = TruckSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -64,6 +70,9 @@ class TruckOwnerTrucksView(generics.ListAPIView):
 
 
 class TruckListView(generics.ListAPIView):
+    """
+    List all available trucks for both clients and truck owners
+    """
     queryset = Truck.objects.filter(available=True)
     serializer_class = TruckSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -77,6 +86,9 @@ class TruckListView(generics.ListAPIView):
 
 
 class BookingCreateView(generics.CreateAPIView):
+    """
+    Client creates a booking for a truck
+    """
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -133,6 +145,9 @@ class BookingCreateView(generics.CreateAPIView):
 
 
 class BookingListView(generics.ListAPIView):
+    """
+    List all bookings for the client or truck owner
+    """
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -150,6 +165,9 @@ class BookingListView(generics.ListAPIView):
 
 
 class GenerateReceiptView(APIView):
+    """
+    Generate a receipt for a booking
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
@@ -188,6 +206,9 @@ class GenerateReceiptView(APIView):
 # Superuser-specific views
 
 class TruckUpdateAvailabilityView(APIView):
+    """
+    Admin updates truck availability to true
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
@@ -209,6 +230,9 @@ class TruckUpdateAvailabilityView(APIView):
 
 
 class BookingUpdateDeliveryCostView(APIView):
+    """
+    Admin updates the delivery cost of a booking
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
@@ -271,6 +295,9 @@ class BookingUpdateDeliveryCostView(APIView):
 
 
 class BookingAdminListView(generics.ListAPIView):
+    """
+    Admin view all bookings with client subscription details
+    """
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
 
