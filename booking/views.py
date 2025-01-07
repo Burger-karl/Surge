@@ -85,6 +85,24 @@ class TruckListView(generics.ListAPIView):
         return Truck.objects.filter(available=True)
 
 
+class AllTrucksView(generics.ListAPIView):
+    """
+    To show all trucks (both available and pending).
+    Accessible to all users.
+    """
+    queryset = Truck.objects.all()
+    serializer_class = TruckSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="List all trucks (both available and pending).",
+        responses={200: TruckSerializer(many=True)},
+    )
+    def get_queryset(self):
+        return Truck.objects.all()
+
+
+
 class BookingCreateView(generics.CreateAPIView):
     """
     Client creates a booking for a truck
