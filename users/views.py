@@ -19,8 +19,10 @@ from datetime import timedelta
 from django.utils import timezone
 from .utils import generate_random_otp
 from django.utils.timezone import now as timezone_now
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.exceptions import PermissionDenied
 
-
+# enter your views
 
 User = get_user_model()
 
@@ -351,24 +353,37 @@ class ForgotPasswordView(APIView):
         return Response({"message": "Password reset token sent."}, status=status.HTTP_200_OK)
 
 
-
 class ProfileCreateView(generics.CreateAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
         operation_description="Create a profile for the authenticated user.",
         responses={201: "Profile created successfully."}
     )
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        user = self.request.user
+        profile_image = self.request.FILES.get('profile_image')
+
+        # Check if the user already has a profile
+        if hasattr(user, 'profile'):
+            raise PermissionDenied("Profile already exists for this user.")
+
+        profile = serializer.save(user=user)
+
+        # Save the profile image if provided
+        if profile_image:
+            profile.profile_image = profile_image
+            profile.save()
 
 
 class ProfileUpdateView(generics.UpdateAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
         operation_description="Update the profile of the authenticated user.",
@@ -376,6 +391,16 @@ class ProfileUpdateView(generics.UpdateAPIView):
     )
     def get_object(self):
         return self.request.user.profile
+
+    def perform_update(self, serializer):
+        profile_image = self.request.FILES.get('profile_image')
+
+        profile = serializer.save()
+
+        # Update the profile image if provided
+        if profile_image:
+            profile.profile_image = profile_image
+            profile.save()
 
 
 # FOR ADMIN USER

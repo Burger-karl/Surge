@@ -93,10 +93,12 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    profile_image = serializers.ImageField(required=False)
+
     class Meta:
         model = Profile
         fields = ('profile_image', 'full_name', 'address', 'phone_number', 'state')
-
+        
 
 # FOR ADMIN USER
 class AdminCreateUserSerializer(serializers.ModelSerializer):

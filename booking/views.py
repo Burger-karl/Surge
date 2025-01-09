@@ -102,7 +102,6 @@ class AllTrucksView(generics.ListAPIView):
         return Truck.objects.all()
 
 
-
 class BookingCreateView(generics.CreateAPIView):
     """
     Client creates a booking for a truck
