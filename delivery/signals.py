@@ -44,16 +44,23 @@ def create_delivery_schedule_on_payment(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=DeliveryHistory)
-def notify_on_delivery_completion(sender, instance, **kwargs):
-    """
-    Notify client and truck owner when a delivery is marked as 'delivered'.
-    """
+def handle_delivery_notifications(sender, instance, **kwargs):
+    if is_migration_running():
+        return
+
     if instance.status == 'delivered':
-        Notification.objects.create(
-            user=instance.booking.client,
-            message="Your delivery has been successfully completed."
-        )
-        Notification.objects.create(
-            user=instance.booking.truck.owner,
-            message="Your truck has successfully completed a delivery."
-        )
+        # Notify both client and truck owner on delivery completion
+        Notification.objects.bulk_create([
+            Notification(
+                user=instance.booking.client,
+                booking=instance.booking,
+                message="Your delivery has been successfully completed.",
+                notification_type="delivery-completed",
+            ),
+            Notification(
+                user=instance.booking.truck.owner,
+                booking=instance.booking,
+                message="Your truck has successfully completed a delivery.",
+                notification_type="delivery-completed",
+            ),
+        ])

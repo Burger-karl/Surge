@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import timedelta
-from users.models import User  
+from users.models import User
 
 class SubscriptionPlan(models.Model):
     FREE = 'free'
@@ -16,7 +16,7 @@ class SubscriptionPlan(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     duration = models.DurationField(default=timedelta(days=0))  # Free plan has no duration
     plan_code = models.CharField(max_length=100, default='default_plan_code')
-    features = models.JSONField(default=dict)  # Store features as a JSON field
+    features = models.JSONField(default=list)  # Store features as a list of strings
 
     def __str__(self):
         return self.name
@@ -28,7 +28,7 @@ class SubscriptionPlan(models.Model):
             defaults={
                 'price': 0.00,
                 'duration': timedelta(days=0),  # Unlimited duration
-                'features': {}
+                'features': []
             }
         )
         cls.objects.get_or_create(
@@ -36,10 +36,10 @@ class SubscriptionPlan(models.Model):
             defaults={
                 'price': 3000.00,
                 'duration': timedelta(days=180),  # 6 months
-                'features': {
-                    'Booking app': True,
-                    'Tracking System': True
-                }
+                'features': [
+                    'Booking app',
+                    'Tracking System'
+                ]
             }
         )
         cls.objects.get_or_create(
@@ -47,13 +47,14 @@ class SubscriptionPlan(models.Model):
             defaults={
                 'price': 5000.00,
                 'duration': timedelta(days=180),  # 6 months
-                'features': {
-                    'Booking app': True,
-                    'Tracking System': True,
-                    'Insurance Coverage': True
-                }
+                'features': [
+                    'Booking app',
+                    'Tracking System',
+                    'Insurance Coverage'
+                ]
             }
         )
+
 
 class UserSubscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
