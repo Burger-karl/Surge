@@ -17,7 +17,7 @@ class Notification(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True, related_name="notifications")
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    read = models.BooleanField(default=True)
+    read = models.BooleanField(default=False)
     notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='booking-created')
 
     class Meta:

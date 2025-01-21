@@ -47,12 +47,12 @@ def handle_booking_notifications(sender, instance, created, **kwargs):
             message="Your truck has been successfully booked and paid for.",
             notification_type="truck-booked",
         )
-        Notification.objects.create(
-            user=instance.client,
-            booking=instance,
-            message="Your booking payment has been verified.",
-            notification_type="booking-payment-verified",
-        )
+        # Notification.objects.create(
+        #     user=instance.client,
+        #     booking=instance,
+        #     message="Your booking payment has been verified.",
+        #     notification_type="booking-payment-verified",
+        # )
 
 @receiver(post_save, sender=Payment)
 def handle_payment_notifications(sender, instance, created, **kwargs):

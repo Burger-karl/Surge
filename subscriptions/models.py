@@ -2,6 +2,67 @@ from django.db import models
 from datetime import timedelta
 from users.models import User
 
+# class SubscriptionPlan(models.Model):
+#     FREE = 'free'
+#     BASIC = 'basic'
+#     PREMIUM = 'premium'
+#     PLAN_CHOICES = [
+#         (FREE, 'Free'),
+#         (BASIC, 'Basic'),
+#         (PREMIUM, 'Premium'),
+#     ]
+
+#     name = models.CharField(max_length=10, choices=PLAN_CHOICES, unique=True)
+#     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+#     duration = models.DurationField(default=timedelta(days=0))  # Free plan has no duration
+#     plan_code = models.CharField(max_length=100, default='default_plan_code')
+#     features = models.JSONField(default=list)  # Store features as a list of strings
+
+#     def __str__(self):
+#         return self.name
+
+#     @classmethod
+#     def create_default_plans(cls):
+#         cls.objects.get_or_create(
+#             name=cls.FREE,
+#             defaults={
+#                 'price': 0.00,
+#                 'duration': timedelta(days=0),  # Unlimited duration
+#                 'features': []
+#             }
+#         )
+#         cls.objects.get_or_create(
+#             name=cls.BASIC,
+#             defaults={
+#                 'price': 3000.00,
+#                 'duration': timedelta(days=180),  # 6 months
+#                 'features': [
+#                     'Booking app',
+#                     'Tracking System'
+#                 ]
+#             }
+#         )
+#         cls.objects.get_or_create(
+#             name=cls.PREMIUM,
+#             defaults={
+#                 'price': 5000.00,
+#                 'duration': timedelta(days=180),  # 6 months
+#                 'features': [
+#                     'Booking app',
+#                     'Tracking System',
+#                     'Insurance Coverage'
+#                 ]
+#             }
+#         )
+
+
+class Feature(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class SubscriptionPlan(models.Model):
     FREE = 'free'
     BASIC = 'basic'
@@ -16,44 +77,54 @@ class SubscriptionPlan(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     duration = models.DurationField(default=timedelta(days=0))  # Free plan has no duration
     plan_code = models.CharField(max_length=100, default='default_plan_code')
-    features = models.JSONField(default=list)  # Store features as a list of strings
+    features = models.ManyToManyField(Feature, related_name="subscription_plans")
 
     def __str__(self):
         return self.name
+    
+    def get_features_list(self):
+        # Retrieve the names of all related Feature objects as a list
+        return list(self.features.values_list('name', flat=True))
 
     @classmethod
     def create_default_plans(cls):
-        cls.objects.get_or_create(
+        # Ensure default features exist
+        booking_app, _ = Feature.objects.get_or_create(name="Booking app")
+        tracking_system, _ = Feature.objects.get_or_create(name="Tracking System")
+        insurance_coverage, _ = Feature.objects.get_or_create(name="Insurance Coverage")
+
+        # Create or update the Free plan
+        free_plan, _ = cls.objects.get_or_create(
             name=cls.FREE,
             defaults={
                 'price': 0.00,
                 'duration': timedelta(days=0),  # Unlimited duration
-                'features': []
             }
         )
-        cls.objects.get_or_create(
+        free_plan.features.set([])  # No features for the free plan
+
+        # Create or update the Basic plan
+        basic_plan, _ = cls.objects.get_or_create(
             name=cls.BASIC,
             defaults={
                 'price': 3000.00,
                 'duration': timedelta(days=180),  # 6 months
-                'features': [
-                    'Booking app',
-                    'Tracking System'
-                ]
             }
         )
-        cls.objects.get_or_create(
+        # Update features for the basic plan
+        basic_plan.features.set([booking_app, tracking_system])
+
+        # Create or update the Premium plan
+        premium_plan, _ = cls.objects.get_or_create(
             name=cls.PREMIUM,
             defaults={
                 'price': 5000.00,
                 'duration': timedelta(days=180),  # 6 months
-                'features': [
-                    'Booking app',
-                    'Tracking System',
-                    'Insurance Coverage'
-                ]
             }
         )
+        # Update features for the premium plan
+        premium_plan.features.set([booking_app, tracking_system, insurance_coverage])
+
 
 
 class UserSubscription(models.Model):
