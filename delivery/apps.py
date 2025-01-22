@@ -4,7 +4,8 @@ class DeliveryConfig(AppConfig):
     name = 'delivery'
 
     def ready(self):
-        import delivery.signals  # Ensure the signals are imported
+        import delivery.signals  
+        
 
 # from django.apps import AppConfig
 

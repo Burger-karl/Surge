@@ -4,6 +4,7 @@ from .models import Notification
 from booking.models import Booking, Truck
 from payment.models import Payment
 from delivery.models import DeliveryHistory
+from subscriptions.models import SubscriptionPlan
 from users.models import User
 from utils import is_migration_running  # Helper function to check if migrations are running
 
@@ -44,6 +45,7 @@ def handle_booking_notifications(sender, instance, created, **kwargs):
         Notification.objects.create(
             user=instance.truck.owner,
             booking=instance,
+            truck=instance.truck,
             message="Your truck has been successfully booked and paid for.",
             notification_type="truck-booked",
         )
@@ -56,17 +58,25 @@ def handle_booking_notifications(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Payment)
 def handle_payment_notifications(sender, instance, created, **kwargs):
-    if is_migration_running():
+    if is_migration_running():  
         return
 
     if created and instance.verified:
-        # Notify client when payment is verified
-        Notification.objects.create(
-            user=instance.booking.client,
-            booking=instance.booking,
-            message="Your payment has been successfully verified.",
-            notification_type="booking-payment-verified",
-        )
+        if instance.booking:
+            Notification.objects.create(
+                user=instance.booking.client,
+                booking=instance.booking,
+                message="Your booking payment has been successfully verified.",
+                notification_type="booking-payment-verified",
+            )
+        elif instance.subscription:
+            Notification.objects.create(
+                user=instance.user,  
+                booking=None,
+                message="Your subscription payment has been successfully verified.",
+                notification_type="subscription-payment-verified",  
+            )
+
 
 @receiver(post_save, sender=DeliveryHistory)
 def handle_delivery_notifications(sender, instance, **kwargs):
@@ -85,6 +95,7 @@ def handle_delivery_notifications(sender, instance, **kwargs):
             Notification(
                 user=instance.booking.truck.owner,
                 booking=instance.booking,
+                truck=instance,
                 message="Your truck has successfully completed a delivery.",
                 notification_type="delivery-completed",
             ),
@@ -103,13 +114,13 @@ def handle_truck_notifications(sender, instance, created, **kwargs):
         Notification.objects.bulk_create([
             Notification(
                 user=superuser,
-                booking=None,
+                truck=instance,
                 message=f"A new truck has been uploaded by {instance.owner.username} and is awaiting inspection.",
                 notification_type="truck-uploaded",
             ),
             Notification(
                 user=instance.owner,
-                booking=None,
+                truck=instance,
                 message="Your truck has been uploaded and is awaiting inspection.",
                 notification_type="truck-uploaded",
             ),
@@ -119,7 +130,7 @@ def handle_truck_notifications(sender, instance, created, **kwargs):
         # Notify truck owner when status is updated to available
         Notification.objects.create(
             user=instance.owner,
-            booking=None,
+            truck=instance,
             message="Your truck status has been updated to available after inspection.",
             notification_type="truck-available",
         )

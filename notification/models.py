@@ -1,10 +1,11 @@
 from django.db import models
 from users.models import User
-from booking.models import Booking  # Import Booking model for foreign key reference
+from booking.models import Booking, Truck
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
         ('booking-payment-verified', 'Booking Payment Verified'),
+        ('subscription-payment-verified', 'Subscription Payment Verified'),
         ('booking-created', 'Booking Created'),
         ('booking-cost-added', 'Booking Cost Added'),
         ('truck-uploaded', 'Truck Uploaded'),
@@ -15,6 +16,7 @@ class Notification(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True, related_name="notifications")
+    truck = models.ForeignKey(Truck, on_delete=models.CASCADE, null=True, blank=True, related_name="notifications")
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
