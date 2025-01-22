@@ -95,7 +95,6 @@ def handle_delivery_notifications(sender, instance, **kwargs):
             Notification(
                 user=instance.booking.truck.owner,
                 booking=instance.booking,
-                truck=instance,
                 message="Your truck has successfully completed a delivery.",
                 notification_type="delivery-completed",
             ),
