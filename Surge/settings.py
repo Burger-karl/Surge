@@ -151,8 +151,7 @@ WSGI_APPLICATION = 'Surge.wsgi.application'
 # Alternatively, specify allowed origins (recommended for production)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",  
-    # "http://127.0.0.1:3000",
-    # "https://surge-frontend.example.com",  
+    "https://surge-eno7.onrender.com",  
 ]
 
 # Allow specific headers, methods, or credentials if needed

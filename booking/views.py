@@ -67,7 +67,7 @@ class TruckOwnerTrucksView(generics.ListAPIView):
         if user.user_type == 'truck_owner':
             return Truck.objects.filter(owner=user)
         raise PermissionDenied("Only truck owners can access this feature.")
-
+    
 
 class TruckListView(generics.ListAPIView):
     """
@@ -83,6 +83,32 @@ class TruckListView(generics.ListAPIView):
     )
     def get_queryset(self):
         return Truck.objects.filter(available=True)
+
+
+class IsTruckOwner(permissions.BasePermission):
+    """
+    Custom permission to allow only the truck owner to delete the truck.
+    """
+    def has_object_permission(self, request, view, obj):
+        return obj.owner == request.user  # Only allow the truck owner to delete
+
+class TruckDeleteView(generics.DestroyAPIView):
+    queryset = Truck.objects.all()
+    serializer_class = TruckSerializer
+    permission_classes = [permissions.IsAuthenticated, IsTruckOwner]
+
+    @swagger_auto_schema(
+        operation_description="Delete a truck.",
+        responses={
+            200: 'Truck deleted successfully.',
+            403: 'Unauthorised for non-truck owner users.'
+        }
+    )
+
+    def delete(self, request, *args, **kwargs):
+        truck = self.get_object()
+        self.perform_destroy(truck)
+        return Response({"message": "Truck deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class AllTrucksView(generics.ListAPIView):

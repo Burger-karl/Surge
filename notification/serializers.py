@@ -10,4 +10,9 @@ class NotificationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if 'read' not in validated_data:
             validated_data['read'] = True  # Set read to True by default
+
+        # Ensure 'user' is set, assuming it's not already passed
+        if 'user' not in validated_data:
+            raise serializers.ValidationError("User is required to create a notification.")
+
         return super().create(validated_data)

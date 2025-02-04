@@ -7,8 +7,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from datetime import datetime
 
-from .models import DeliverySchedule, DeliveryHistory, DeliveryDocument
-from .serializers import DeliveryScheduleSerializer, DeliveryHistorySerializer, DeliveryDocumentSerializer
+from .models import DeliverySchedule, DeliveryHistory
+from .serializers import DeliveryScheduleSerializer, DeliveryHistorySerializer
 from booking.models import Booking
 
 
@@ -109,20 +109,6 @@ class DeliveryHistoryView(generics.ListAPIView):
             booking__client=user,
             status='delivered'
         )
-
-
-
-# class DeliveryDocumentView(generics.ListAPIView):
-#     queryset = DeliveryDocument.objects.all()
-#     serializer_class = DeliveryDocumentSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     @swagger_auto_schema(
-#         operation_description="List all delivery documents available for the authenticated user.",
-#         responses={200: DeliveryDocumentSerializer(many=True)}
-#     )
-#     def get(self, request, *args, **kwargs):
-#         return super().get(request, *args, **kwargs)
 
 
 class UpdateDeliveryScheduleStatusView(APIView):

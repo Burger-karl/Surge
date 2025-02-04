@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     TruckCreateView, TruckListView, BookingCreateView, BookingListView, 
     TruckUpdateAvailabilityView, BookingUpdateDeliveryCostView, BookingAdminListView, 
-    GenerateReceiptView, TruckOwnerTrucksView, PendingTrucksListView, AllTrucksView
+    GenerateReceiptView, TruckOwnerTrucksView, PendingTrucksListView, AllTrucksView,
+    TruckDeleteView
 )
 
 urlpatterns = [
@@ -13,6 +14,7 @@ urlpatterns = [
     path('bookings/create/', BookingCreateView.as_view(), name='booking-create'),
     path('bookings/<str:booking_code>/receipt/', GenerateReceiptView.as_view(), name='generate-receipt'),
     path('trucks/all/', AllTrucksView.as_view(), name='all-trucks'),
+    path('trucks/<int:pk>/delete/', TruckDeleteView.as_view(), name='delete-truck'),
 
     # For Superuser
     path('bookings/admin/', BookingAdminListView.as_view(), name='admin-booking-list'),  # View all bookings
